@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FotoMapa PWA</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <main class="container">
+    <h1>FotoMapa PWA</h1>
+    <p>Prosta aplikacja do zapisywania zdjęć z lokalizacją.</p>
+
+    <form id="entryForm">
+      <label for="titleInput">Tytuł</label>
+      <input id="titleInput" required>
+
+      <label for="descInput">Opis</label>
+      <textarea id="descInput"></textarea>
+
+      <button type="submit">Zapisz</button>
+    </form>
+
+    <section>
+      <h2>Mapa</h2>
+      <div id="mapPlaceholder">Mapa</div>
+    </section>
+
+    <section>
+      <h2>Wpisy</h2>
+      <div id="entriesList"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

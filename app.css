@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f7fb;
+  color: #1f2937;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+input, textarea, button {
+  padding: 10px;
+  font: inherit;
+}
