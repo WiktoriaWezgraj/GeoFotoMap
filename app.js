@@ -74,7 +74,8 @@ function renderEntries() {
   entries.forEach((entry) => {
     const item = document.createElement('article');
     item.className = 'entry';
-    item.innerHTML = `${entry.imageDataUrl ? `<img src="${entry.imageDataUrl}" alt="Zdjęcie">` : ''}<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p><p>GPS: ${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}</p><button data-action="focus">Pokaż na mapie</button> <button data-action="delete">Usuń</button>`;
+    item.innerHTML = `${entry.imageDataUrl ? `<img src="${entry.imageDataUrl}" alt="Zdjęcie">` : ''}<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p><p>GPS: ${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}</p><button data-action="share">Udostępnij</button> <button data-action="focus">Pokaż na mapie</button> <button data-action="delete">Usuń</button>`;
+    item.querySelector('[data-action="share"]').addEventListener('click', () => shareEntry(entry));
     item.querySelector('[data-action="focus"]').addEventListener('click', () => focusEntry(entry.id));
     item.querySelector('[data-action="delete"]').addEventListener('click', () => deleteEntry(entry.id));
     entriesList.appendChild(item);
@@ -96,10 +97,10 @@ function getLocation() {
   updateStatus('Pobieram lokalizację GPS...');
   navigator.geolocation.getCurrentPosition((pos) => {
     currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
-    updateStatus(`Lokalizacja: ${currentPosition.lat.toFixed(5)}, ${currentPosition.lng.toFixed(5)}`);
+    updateStatus('Lokalizacja: ${currentPosition.lat.toFixed(5)}, ${currentPosition.lng.toFixed(5)}');
     map.setView([currentPosition.lat, currentPosition.lng], 16);
   }, (error) => {
-    updateStatus(`Nie udało się pobrać GPS: ${error.message}`);
+    updateStatus('Nie udało się pobrać GPS: ${error.message}');
   }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
 }
 
@@ -127,4 +128,21 @@ function clearEntries() {
   localStorage.removeItem(STORAGE_KEY);
   renderEntries();
   updateStatus('Wyczyszczono wszystkie wpisy.');
+}
+
+async function shareEntry(entry) {
+  const shareText = `${entry.title}
+${entry.description || ''}
+GPS: ${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: entry.title, text: shareText });
+      updateStatus('Wpis został udostępniony.');
+    } else {
+      await navigator.clipboard.writeText(shareText);
+      updateStatus('Web Share API niedostępne. Skopiowano tekst do schowka.');
+    }
+  } catch (error) {
+    if (error?.name !== 'AbortError') updateStatus(`Udostępnianie nie powiodło się: ${error.message}`);
+  }
 }
