@@ -6,10 +6,25 @@ const form = document.getElementById('entryForm');
 const titleInput = document.getElementById('titleInput');
 const descInput = document.getElementById('descInput');
 const entriesList = document.getElementById('entriesList');
+const photoInput = document.getElementById('photoInput');
+const photoPreview = document.getElementById('photoPreview');
+let currentImageDataUrl = '';
 
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   renderEntries();
+});
+
+photoInput.addEventListener('change', (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    currentImageDataUrl = reader.result;
+    photoPreview.src = currentImageDataUrl;
+    photoPreview.hidden = false;
+  };
+  reader.readAsDataURL(file);
 });
 
 form.addEventListener('submit', (event) => {
@@ -19,6 +34,7 @@ form.addEventListener('submit', (event) => {
     id: crypto.randomUUID(),
     title: titleInput.value.trim(),
     description: descInput.value.trim(),
+    imageDataUrl: currentImageDataUrl,
     lat: 52.2297,
     lng: 21.0122,
     createdAt: new Date().toISOString(),
@@ -49,8 +65,8 @@ function renderEntries() {
   entries.forEach((entry) => {
     const item = document.createElement('article');
     item.className = 'entry';
-    item.innerHTML = `<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p>`;
+    item.innerHTML = ${entry.imageDataUrl ? `<img src="${entry.imageDataUrl}" alt="Zdjęcie"> : ''}<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p>`;
     entriesList.appendChild(item);
     L.marker([entry.lat, entry.lng]).addTo(markersLayer).bindPopup(entry.title);
-  });
+  }});
 }

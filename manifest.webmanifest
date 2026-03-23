@@ -1,7 +1,7 @@
 {
-  "name": "FotoMapa PWA",
-  "short_name": "FotoMapa",
-  "description": "Aplikacja PWA do robienia zdjęć z kamery lub pliku, lokalizacją GPS, mapą i udostępnianiem.",
+  "name": "GeoFotoMapa PWA",
+  "short_name": "GeoFotoMapa",
+  "description": "Aplikacja PWA do robienia zdjęć z kamery lub pliku, lokalizacją GPS, mapą i udostępnianiem zdjęć. :)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

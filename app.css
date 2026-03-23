@@ -37,3 +37,9 @@ input, textarea, button {
   padding: 12px;
   background: #fafcff;
 }
+
+#photoPreview {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+}
