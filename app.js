@@ -9,6 +9,8 @@ const descInput = document.getElementById('descInput');
 const entriesList = document.getElementById('entriesList');
 const locateBtn = document.getElementById('locateBtn');
 const statusBox = document.getElementById('statusBox');
+const centerBtn = document.getElementById('centerBtn');
+const clearBtn = document.getElementById('clearBtn');
 const photoInput = document.getElementById('photoInput');
 const photoPreview = document.getElementById('photoPreview');
 let currentImageDataUrl = '';
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 locateBtn.addEventListener('click', getLocation);
+centerBtn.addEventListener('click', centerOnLast);
+clearBtn.addEventListener('click', clearEntries);
 
 photoInput.addEventListener('change', (event) => {
   const file = event.target.files?.[0];
@@ -70,9 +74,12 @@ function renderEntries() {
   entries.forEach((entry) => {
     const item = document.createElement('article');
     item.className = 'entry';
-    item.innerHTML = `${entry.imageDataUrl ? `<img src="${entry.imageDataUrl}" alt="Zdjęcie">` : ''}<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p>`;
+    item.innerHTML = `${entry.imageDataUrl ? `<img src="${entry.imageDataUrl}" alt="Zdjęcie">` : ''}<h3>${entry.title}</h3><p>${entry.description || 'Brak opisu'}</p><p>GPS: ${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}</p><button data-action="focus">Pokaż na mapie</button> <button data-action="delete">Usuń</button>`;
+    item.querySelector('[data-action="focus"]').addEventListener('click', () => focusEntry(entry.id));
+    item.querySelector('[data-action="delete"]').addEventListener('click', () => deleteEntry(entry.id));
     entriesList.appendChild(item);
-    L.marker([entry.lat, entry.lng]).addTo(markersLayer).bindPopup(entry.title);
+    const marker = L.marker([entry.lat, entry.lng]).addTo(markersLayer).bindPopup(entry.title);
+    marker.entryId = entry.id;
   });
 }
 
@@ -94,4 +101,30 @@ function getLocation() {
   }, (error) => {
     updateStatus(`Nie udało się pobrać GPS: ${error.message}`);
   }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+}
+
+function focusEntry(entryId) {
+  const entry = getEntries().find((item) => item.id === entryId);
+  if (!entry) return;
+  map.setView([entry.lat, entry.lng], 17);
+  markersLayer.eachLayer((layer) => { if (layer.entryId === entryId) layer.openPopup(); });
+}
+
+function centerOnLast() {
+  const entries = getEntries();
+  if (entries.length) focusEntry(entries[0].id);
+}
+
+function deleteEntry(entryId) {
+  const filtered = getEntries().filter((entry) => entry.id !== entryId);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  renderEntries();
+  updateStatus('Wpis został usunięty.');
+}
+
+function clearEntries() {
+  if (!confirm('Usunąć wszystkie wpisy?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderEntries();
+  updateStatus('Wyczyszczono wszystkie wpisy.');
 }
