@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FotoMapa PWA</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
   <main class="container">
     <h1>FotoMapa PWA</h1>
-    <p>Prosta aplikacja do zapisywania zdjęć z lokalizacją.</p>
+    <p>Zapisuj punkty terenowe i pokazuj je na mapie.</p>
 
     <form id="entryForm">
       <label for="titleInput">Tytuł</label>
@@ -23,7 +24,7 @@
 
     <section>
       <h2>Mapa</h2>
-      <div id="mapPlaceholder">Mapa</div>
+      <div id="map"></div>
     </section>
 
     <section>
@@ -31,6 +32,7 @@
       <div id="entriesList"></div>
     </section>
   </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
