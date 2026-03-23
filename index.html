@@ -4,46 +4,175 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="PWA do robienia zdjęć z lokalizacją, mapą i udostępnianiem.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>FotoMapa PWA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <main class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h1>FotoMapa PWA</h1><button id="installBtn" type="button" hidden>Zainstaluj</button></div>
-    <p>Zapisuj punkty terenowe i pokazuj je na mapie.</p>
+  <nav class="navbar app-navbar navbar-dark shadow-sm">
+    <div class="container">
+      <div>
+        <span class="navbar-brand mb-0 h1 fw-bold">FotoMapa PWA</span>
+        <div class="small text-white-50">Zdjęcie + GPS + mapa + udostępnianie</div>
+      </div>
+      <button id="installBtn" class="btn btn-light btn-sm d-none">Zainstaluj</button>
+    </div>
+  </nav>
 
-    <form id="entryForm">
-      <label for="titleInput">Tytuł</label>
-      <input id="titleInput" required>
+  <header class="hero-section">
+    <div class="container py-4 py-lg-5">
+      <div class="hero-card">
+        <div>
+          <div class="badge rounded-pill text-bg-light mb-3">Projekt PWA</div>
+          <h1 class="display-6 fw-bold mb-3">Twórz wpisy terenowe bezpośrednio z telefonu lub laptopa</h1>
+          <p class="lead mb-0">Uruchom aparat, zrób zdjęcie, pobierz lokalizację GPS, pokaż punkt na mapie i udostępnij wpis przez systemowy panel share.</p>
+        </div>
+      </div>
+    </div>
+  </header>
 
-      <label for="descInput">Opis</label>
-      <textarea id="descInput"></textarea>
+  <main class="container pb-4 pb-lg-5">
+    <div class="row g-4">
+      <div class="col-xl-5">
+        <section class="card app-card shadow-sm h-100 border-0">
+          <div class="card-body p-4">
+            <div class="section-heading mb-3">
+              <h2 class="h4 mb-1">Nowy wpis</h2>
+              <p class="text-muted mb-0">Dodaj tytuł, zdjęcie i pozycję. Możesz użyć kamery albo wybrać plik.</p>
+            </div>
 
-      <label for="photoInput">Zdjęcie</label>
-      <input id="photoInput" type="file" accept="image/*" capture="environment">
-      <img id="photoPreview" alt="Podgląd zdjęcia" hidden>
+            <form id="entryForm" class="vstack gap-3">
+              <div>
+                <label class="form-label" for="titleInput">Tytuł</label>
+                <input id="titleInput" class="form-control form-control-lg" maxlength="80" placeholder="np. Piękny widok / dziura w drodze" required>
+              </div>
 
-      <button id="locateBtn" type="button">Pobierz GPS</button>
-      <div id="statusBox">Czekam na zdjęcie i lokalizację.</div>
+              <div>
+                <label class="form-label" for="descInput">Opis</label>
+                <textarea id="descInput" class="form-control" rows="3" placeholder="Krótki opis miejsca"></textarea>
+              </div>
 
-      <button type="submit">Zapisz</button>
-    </form>
+              <div class="camera-panel rounded-4 p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                  <div>
+                    <h3 class="h5 mb-1">Zdjęcie</h3>
+                    <div class="small text-muted">Kamera działa na laptopie i telefonie przez <code>getUserMedia</code>.</div>
+                  </div>
+                  <span id="cameraBadge" class="badge text-bg-secondary">Kamera wyłączona</span>
+                </div>
 
-    <section>
-      <h2>Mapa</h2>
-      <div id="map"></div>
-    </section>
+                <div id="cameraWrap" class="camera-wrap d-none">
+                  <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+                  <canvas id="cameraCanvas" class="d-none"></canvas>
+                </div>
 
-    <section>
-      <h2>Wpisy</h2>
-      <button id="centerBtn" type="button">Wyśrodkuj na ostatnim punkcie</button>
-      <button id="clearBtn" type="button">Wyczyść wszystko</button>
-      <div id="entriesList"></div>
-    </section>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <button id="startCameraBtn" type="button" class="btn btn-primary">Włącz kamerę</button>
+                  <button id="capturePhotoBtn" type="button" class="btn btn-success" disabled>Zrób zdjęcie</button>
+                  <button id="stopCameraBtn" type="button" class="btn btn-outline-secondary" disabled>Wyłącz kamerę</button>
+                </div>
+
+                <div>
+                  <label class="form-label" for="photoInput">Albo wybierz plik</label>
+                  <input id="photoInput" class="form-control" type="file" accept="image/*" capture="environment">
+                  <div class="form-text">Na telefonie może otworzyć aparat, a na komputerze pozwoli wybrać zdjęcie z dysku.</div>
+                </div>
+              </div>
+
+              <div id="previewWrap" class="d-none preview-panel">
+                <div class="preview-label small text-uppercase fw-semibold text-muted mb-2">Podgląd zdjęcia</div>
+                <img id="photoPreview" class="img-fluid rounded-4 preview-image" alt="Podgląd zdjęcia">
+              </div>
+
+              <div class="gps-box rounded-4 p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <h3 class="h5 mb-1">Lokalizacja</h3>
+                    <div class="small text-muted">Pobierz aktualną pozycję GPS urządzenia.</div>
+                  </div>
+                  <button id="locateBtn" type="button" class="btn btn-outline-primary">Pobierz GPS</button>
+                </div>
+              </div>
+
+              <div class="d-grid">
+                <button type="submit" class="btn btn-lg btn-primary">Zapisz wpis</button>
+              </div>
+
+              <div id="statusBox" class="alert alert-secondary mb-0 small status-box">
+                Czekam na zdjęcie i lokalizację.
+              </div>
+
+              <div class="small text-muted">
+                <strong>Spełnione elementy projektu:</strong> kamera, geolokalizacja, Web Share API, OpenStreetMap, instalacja PWA, offline, responsywność.
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-xl-7">
+        <section class="card app-card shadow-sm mb-4 border-0">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <h2 class="h4 mb-1">Mapa wpisów</h2>
+                <div class="text-muted small">OpenStreetMap + Leaflet</div>
+              </div>
+              <button id="centerBtn" class="btn btn-outline-secondary btn-sm" type="button">Wyśrodkuj na ostatnim punkcie</button>
+            </div>
+            <div id="map" class="mt-3 rounded-4"></div>
+          </div>
+        </section>
+
+        <section class="card app-card shadow-sm border-0">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <h2 class="h4 mb-1">Zapisane wpisy</h2>
+                <div class="small text-muted">Wpisy są zapisywane lokalnie w przeglądarce.</div>
+              </div>
+              <button id="clearBtn" class="btn btn-outline-danger btn-sm" type="button">Wyczyść wszystko</button>
+            </div>
+            <div id="entriesList" class="vstack gap-3 mt-3"></div>
+          </div>
+        </section>
+      </div>
+    </div>
   </main>
+
+  <template id="entryTemplate">
+    <article class="card entry-card border-0 shadow-sm overflow-hidden">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img class="entry-image w-100 h-100 object-fit-cover" alt="Zdjęcie wpisu">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+              <div>
+                <h3 class="h5 entry-title mb-1"></h3>
+                <div class="entry-date small text-muted"></div>
+              </div>
+              <div class="d-flex gap-2 flex-wrap justify-content-end">
+                <button class="btn btn-sm btn-primary share-btn" type="button">Udostępnij</button>
+                <button class="btn btn-sm btn-outline-secondary focus-btn" type="button">Pokaż na mapie</button>
+                <button class="btn btn-sm btn-outline-danger delete-btn" type="button">Usuń</button>
+              </div>
+            </div>
+            <p class="entry-desc mt-3 mb-3 text-secondary-emphasis"></p>
+            <div class="entry-meta small">
+              <span><strong>GPS:</strong> <span class="entry-coords"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
