@@ -3,13 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>FotoMapa PWA</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
   <main class="container">
-    <h1>FotoMapa PWA</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h1>FotoMapa PWA</h1><button id="installBtn" type="button" hidden>Zainstaluj</button></div>
     <p>Zapisuj punkty terenowe i pokazuj je na mapie.</p>
 
     <form id="entryForm">

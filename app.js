@@ -2,6 +2,7 @@ const STORAGE_KEY = 'fotomapa_entries_v1';
 let map;
 let markersLayer;
 let currentPosition = null;
+let deferredPrompt = null;
 
 const form = document.getElementById('entryForm');
 const titleInput = document.getElementById('titleInput');
@@ -11,6 +12,7 @@ const locateBtn = document.getElementById('locateBtn');
 const statusBox = document.getElementById('statusBox');
 const centerBtn = document.getElementById('centerBtn');
 const clearBtn = document.getElementById('clearBtn');
+const installBtn = document.getElementById('installBtn');
 const photoInput = document.getElementById('photoInput');
 const photoPreview = document.getElementById('photoPreview');
 let currentImageDataUrl = '';
@@ -23,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
 locateBtn.addEventListener('click', getLocation);
 centerBtn.addEventListener('click', centerOnLast);
 clearBtn.addEventListener('click', clearEntries);
+installBtn.addEventListener('click', installApp);
+window.addEventListener('beforeinstallprompt', (event) => { event.preventDefault(); deferredPrompt = event; installBtn.hidden = false; });
+window.addEventListener('appinstalled', () => { updateStatus('Aplikacja została zainstalowana.'); installBtn.hidden = true; });
 
 photoInput.addEventListener('change', (event) => {
   const file = event.target.files?.[0];
@@ -143,6 +148,18 @@ GPS: ${entry.lat.toFixed(5)}, ${entry.lng.toFixed(5)}`;
       updateStatus('Web Share API niedostępne. Skopiowano tekst do schowka.');
     }
   } catch (error) {
-    if (error?.name !== 'AbortError') updateStatus(`Udostępnianie nie powiodło się: ${error.message}`);
+    if (error?.name !== 'AbortError') updateStatus('Udostępnianie nie powiodło się: ${error.message}');
   }
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.hidden = true;
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch((error) => console.error('SW registration failed', error));
 }
