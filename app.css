@@ -43,3 +43,5 @@ input, textarea, button {
   border-radius: 12px;
   display: block;
 }
+
+#statusBox { padding: 10px; background: #eef2ff; border-radius: 10px; }
